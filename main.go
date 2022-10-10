@@ -22,21 +22,28 @@ func main() {
 	scanner := bufio.NewScanner(file)
 	var counter int = 0
 	for scanner.Scan() {
+
 		// continue to next line (pass the first line)
 		if counter == 0 {
 			counter += 1
 			continue
 		}
+
+		
+
 		provinceCode := strings.Split(scanner.Text(), ",")[2][:3]
-		listFileName[provinceCode] = provinceCode
-		checkIsCreateAndOpenProvinceCSV(provinceCode, pathForWrite)
+		date := strings.Split(scanner.Text(), ",")[1][:8]
+		listFileName[provinceCode] = getFileName(provinceCode, date)
+		checkIsCreateAndOpenProvinceCSV(provinceCode, date, pathForWrite)
 		writeLine(pathForWrite[provinceCode], scanner.Text())
 		counter += 1
 	}
+
 	if err := scanner.Err(); err != nil {
 		log.Fatalf("scan file error: %v", err)
 		return
 	}
+
 	fmt.Printf("main, execution time %s\n", time.Since(start))
 	return
 }
@@ -49,8 +56,12 @@ func checkError(err error) {
 	return
 }
 
-func checkIsCreateAndOpenProvinceCSV(newProvince string, pathForWrite map[string]string) {
-	var pathWriterFile string = "./result/" + newProvince + ".csv"
+func checkIsCreateAndOpenProvinceCSV(newProvince string, date string, pathForWrite map[string]string) {
+	var path string = "./result/"
+	var fileName string = getFileName(newProvince, date)
+	var pathWriterFile string = path + fileName
+
+	
 	if _, err := os.Stat(pathWriterFile); err != nil {
 		os.Create(pathWriterFile)
 		pathForWrite[newProvince] = pathWriterFile
@@ -65,4 +76,8 @@ func writeLine(writeTo, line string) {
 	w.WriteString(line)
 	w.WriteString("\n")
 	return
+}
+
+func getFileName(provine string, date string) string {
+	return "LTE KPI Backup EAS " + provine + "&" + date +".csv"
 }
